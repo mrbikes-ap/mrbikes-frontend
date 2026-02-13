@@ -29,7 +29,7 @@ function App() {
         <Route path="/executive" element={<ExecutiveLayout />}>
           <Route index element={<ExecutiveDashboard />} />
         </Route>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
