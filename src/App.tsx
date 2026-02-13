@@ -9,29 +9,32 @@ import PaymentReport from './pages/office/PaymentReport';
 import DashboardHome from './pages/office/DashboardHome';
 import ExecutiveLayout from './layouts/ExecutiveLayout';
 import ExecutiveDashboard from './pages/executive/ExecutiveDashboard';
-
+import OfflineAlert from './components/OfflineAlert';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/office" element={<OfficeLayout />}>
-          <Route index element={<DashboardHome />} />
-          <Route path="create-agent" element={<CreateAgent />} />
-          <Route path="create-loan" element={<CreateLoan />} />
-          <Route path="repayment" element={<LoanRepayment />} />
-          <Route path="close-loan" element={<CloseLoan />} />
-          <Route path="report" element={<PaymentReport />} />
-        </Route>
+    <>
+      <OfflineAlert />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/office" element={<OfficeLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="create-agent" element={<CreateAgent />} />
+            <Route path="create-loan" element={<CreateLoan />} />
+            <Route path="repayment" element={<LoanRepayment />} />
+            <Route path="close-loan" element={<CloseLoan />} />
+            <Route path="report" element={<PaymentReport />} />
+          </Route>
 
-        {/* Executive Routes */}
-        <Route path="/executive" element={<ExecutiveLayout />}>
-          <Route index element={<ExecutiveDashboard />} />
-        </Route>
-        <Route path="/" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Executive Routes */}
+          <Route path="/executive" element={<ExecutiveLayout />}>
+            <Route index element={<ExecutiveDashboard />} />
+          </Route>
+          <Route path="/" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
