@@ -1,13 +1,23 @@
+import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { LogOut, Shield } from 'lucide-react';
 
 export default function ExecutiveLayout() {
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+
+        if (!token || role !== 'executive') {
+            navigate('/login', { replace: true });
+        }
+    }, [navigate]);
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        navigate('/login');
+        navigate('/login', { replace: true });
     };
 
     return (

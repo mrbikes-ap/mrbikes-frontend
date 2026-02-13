@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
 
@@ -6,10 +6,19 @@ export default function OfficeLayout() {
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+
+        if (!token || role !== 'office') {
+            navigate('/login', { replace: true });
+        }
+    }, [navigate]);
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        navigate('/login');
+        navigate('/login', { replace: true });
     };
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -34,7 +43,7 @@ export default function OfficeLayout() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed md:sticky top-0 left-0 h-screen w-64 bg-brand-dark border-r border-white/10 p-4 flex flex-col z-50 transition-transform duration-300 ease-in-out
+                fixed md:sticky top-0 left-0 h-[100dvh] w-64 bg-brand-dark border-r border-white/10 p-4 flex flex-col z-50 transition-transform duration-300 ease-in-out
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <h2 className="text-xl font-bold text-brand-red mb-6 hidden md:block">Office Panel</h2>
