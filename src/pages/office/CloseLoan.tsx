@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Search, FileText, CheckCircle, AlertOctagon, IndianRupee } from 'lucide-react';
@@ -9,6 +9,7 @@ export default function CloseLoan() {
     const [allLoans, setAllLoans] = useState<any[]>([]);
     const [filteredLoans, setFilteredLoans] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const justSelected = useRef(false); // flag to suppress dropdown after selection
 
     // Remove searchId as it is replaced by searchTerm logic
     // const [searchId, setSearchId] = useState(''); 
@@ -26,6 +27,12 @@ export default function CloseLoan() {
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredLoans([]);
+            setShowSuggestions(false);
+            return;
+        }
+        // Skip showing suggestions right after a loan is selected
+        if (justSelected.current) {
+            justSelected.current = false;
             return;
         }
         const lowerTerm = searchTerm.toLowerCase().trim();
@@ -56,6 +63,7 @@ export default function CloseLoan() {
     };
 
     const handleSelectLoan = (selectedLoan: any) => {
+        justSelected.current = true; // prevent useEffect from re-opening suggestions
         setSearchTerm(`${selectedLoan.id} - ${selectedLoan.applicantName}`);
         setShowSuggestions(false);
         fetchLoanDetails(selectedLoan.id);

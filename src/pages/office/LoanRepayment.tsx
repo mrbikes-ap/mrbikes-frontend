@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Search, FileText, Calendar, IndianRupee, AlertCircle, History, User, CreditCard, Download } from 'lucide-react';
@@ -10,6 +10,7 @@ export default function LoanRepayment() {
     const [allLoans, setAllLoans] = useState<any[]>([]);
     const [filteredLoans, setFilteredLoans] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const justSelected = useRef(false); // flag to suppress dropdown after selection
 
     const [loan, setLoan] = useState<any>(null);
     const [repayments, setRepayments] = useState<any[]>([]);
@@ -33,6 +34,12 @@ export default function LoanRepayment() {
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredLoans([]);
+            setShowSuggestions(false);
+            return;
+        }
+        // Skip showing suggestions right after a loan is selected
+        if (justSelected.current) {
+            justSelected.current = false;
             return;
         }
         const lowerTerm = searchTerm.toLowerCase().trim();
@@ -65,12 +72,9 @@ export default function LoanRepayment() {
     };
 
     const handleSelectLoan = (selectedLoan: any) => {
+        justSelected.current = true; // prevent useEffect from re-opening suggestions
         setSearchTerm(`${selectedLoan.id} - ${selectedLoan.applicantName}`);
         setShowSuggestions(false);
-        // Fetch full details for the selected loan
-        // We might already have basics, but fetchLoanDetails gets repayments too? 
-        // Existing fetchLoanDetails uses searchId. Let's adapt it.
-        // Or better, just call the API with the ID.
         fetchFullLoanDetails(selectedLoan.id);
     };
 
