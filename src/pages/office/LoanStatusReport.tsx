@@ -44,8 +44,8 @@ export default function LoanStatusReport() {
             const token = localStorage.getItem('token');
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-            // Always fetch ALL loans for client-side filtering
-            const response = await fetch(`${API_URL}/loans`, {
+            // Always fetch ALL loans WITH repayments for client-side filtering & calculation
+            const response = await fetch(`${API_URL}/loans?includeRepayments=true`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
