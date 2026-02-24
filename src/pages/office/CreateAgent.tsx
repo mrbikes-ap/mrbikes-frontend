@@ -54,21 +54,23 @@ export default function CreateAgent() {
 
     return (
         <div className="max-w-md mx-auto mt-10">
-            <div className="bg-brand-gray p-8 rounded-lg border border-white/10 shadow-xl">
+            <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-lg">
                 <div className="flex items-center gap-3 mb-6">
-                    <UserPlus className="w-8 h-8 text-brand-red" />
-                    <h2 className="text-2xl font-bold text-white">Create Executive</h2>
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <UserPlus className="w-6 h-6 text-brand-red" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">Create Executive</h2>
                 </div>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded mb-4 flex items-center text-sm">
+                    <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded mb-4 flex items-center text-sm">
                         <AlertCircle className="w-4 h-4 mr-2" />
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div className="bg-green-500/10 border border-green-500/50 text-green-500 p-3 rounded mb-4 flex items-center text-sm">
+                    <div className="bg-green-50 border border-green-200 text-green-600 p-3 rounded mb-4 flex items-center text-sm">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         {success}
                     </div>
@@ -76,7 +78,7 @@ export default function CreateAgent() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm text-gray-400 mb-1">Agent Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Agent Name</label>
                         <Input
                             name="name"
                             value={formData.name}
@@ -87,7 +89,7 @@ export default function CreateAgent() {
                     </div>
 
                     <div>
-                        <label className="block text-sm text-gray-400 mb-1">Login ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Login ID</label>
                         <Input
                             name="id"
                             value={formData.id}
@@ -98,7 +100,7 @@ export default function CreateAgent() {
                     </div>
 
                     <div>
-                        <label className="block text-sm text-gray-400 mb-1">Security Code</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Security Code</label>
                         <Input
                             name="code"
                             value={formData.code}

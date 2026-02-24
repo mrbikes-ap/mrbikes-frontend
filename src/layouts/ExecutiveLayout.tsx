@@ -21,23 +21,23 @@ export default function ExecutiveLayout() {
     };
 
     return (
-        <div className="min-h-screen bg-brand-dark text-white flex flex-col">
+        <div className="min-h-screen bg-brand-gray text-gray-900 flex flex-col">
             {/* Mobile Header */}
-            <header className="bg-black/40 backdrop-blur-md border-b border-white/10 p-4 sticky top-0 z-50 flex justify-between items-center">
+            <header className="bg-white/95 backdrop-blur-md border-b border-gray-200 p-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-brand-red rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-brand-red rounded-lg flex items-center justify-center shadow-sm">
                         <Shield className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-sm leading-tight">MR Bikes</h1>
-                        <p className="text-[10px] text-gray-400">Executive Panel</p>
+                        <h1 className="font-bold text-sm leading-tight text-gray-900">MR Bikes</h1>
+                        <p className="text-[10px] text-gray-500">Executive Panel</p>
                     </div>
                 </div>
                 <button
                     onClick={handleLogout}
-                    className="p-2 bg-white/5 rounded-full hover:bg-white/10"
+                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
                 >
-                    <LogOut className="w-4 h-4 text-gray-400" />
+                    <LogOut className="w-4 h-4 text-gray-600" />
                 </button>
             </header>
 

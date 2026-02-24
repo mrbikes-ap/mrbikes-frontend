@@ -75,5 +75,16 @@ export const calculateNextDueDate = (loan: any): string => {
     const nextDueDate = new Date(startDate);
     nextDueDate.setMonth(startDate.getMonth() + monthsToAdd);
 
+
     return formatDate(nextDueDate);
+};
+
+export const getDueDays = (dueDate: any): number => {
+    const target = parseFirestoreDate(dueDate);
+    if (!target) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+    const diffTime = target.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };

@@ -55,21 +55,21 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-brand-dark flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="min-h-screen bg-brand-gray flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-xl">
                 <div className="flex flex-col items-center mb-8">
                     <div className="flex flex-col items-center mb-8">
                         <img src="/logo.png" alt="MR Bikes Logo" className="w-32 h-32 object-contain mb-4" />
-                        <h1 className="text-2xl font-bold text-white mb-1">MR Bikes</h1>
-                        <p className="text-gray-400 text-sm">Finance & Consultancy Platform</p>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-1">MR Bikes</h1>
+                        <p className="text-gray-500 text-sm">Finance & Consultancy Platform</p>
                     </div>
 
-                    <div className="bg-black/20 p-1 rounded-lg flex mb-8">
+                    <div className="bg-gray-100 p-1 rounded-lg flex mb-8 w-full">
                         <button
                             onClick={() => setRole('office')}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${role === 'office'
-                                ? 'bg-brand-red text-white shadow-lg'
-                                : 'text-gray-400 hover:text-white'
+                                ? 'bg-white text-brand-red shadow-sm'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             Office Login
@@ -77,15 +77,15 @@ export default function Login() {
                         <button
                             onClick={() => setRole('executive')}
                             className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${role === 'executive'
-                                ? 'bg-brand-red text-white shadow-lg'
-                                : 'text-gray-400 hover:text-white'
+                                ? 'bg-white text-brand-red shadow-sm'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             Executive Login
                         </button>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleLogin} className="space-y-6 w-full">
                         <Input
                             name="id"
                             label="Login ID"
@@ -105,7 +105,7 @@ export default function Login() {
                         />
 
                         {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm text-center">
+                            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center border border-red-200">
                                 {error}
                             </div>
                         )}
@@ -116,7 +116,7 @@ export default function Login() {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-400">
                             Secure Access • v1.0.0
                         </p>
                     </div>

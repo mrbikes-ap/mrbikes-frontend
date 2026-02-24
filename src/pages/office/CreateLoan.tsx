@@ -129,26 +129,33 @@ export default function CreateLoan() {
 
     return (
         <div className="max-w-4xl mx-auto mt-6 mb-10">
-            <div className="bg-brand-gray p-8 rounded-lg border border-white/10 shadow-xl">
-                <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
-                    <FileText className="w-8 h-8 text-brand-red" />
-                    <h2 className="text-2xl font-bold text-white">New Loan Application</h2>
+            <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-lg">
+                <div className="flex items-center gap-3 mb-8 border-b border-gray-200 pb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-brand-red" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">New Loan Application</h2>
                 </div>
 
-                {error && <div className="bg-red-500/10 text-red-500 p-3 rounded mb-4">{error}</div>}
-                {success && <div className="bg-green-500/10 text-green-500 p-3 rounded mb-4">{success}</div>}
+                {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 border border-red-200">{error}</div>}
+                {success && <div className="bg-green-50 text-green-600 p-3 rounded mb-4 border border-green-200">{success}</div>}
 
                 <form onSubmit={handleSubmit} className="space-y-8">
 
                     {/* LAN Section */}
-                    <div className="bg-white/5 p-4 rounded-lg">
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
                         <label className="block text-sm text-brand-red font-bold mb-1 uppercase">LAN Number</label>
                         <Input name="id" value={formData.id} onChange={handleChange} placeholder="LAN..." required />
                     </div>
 
                     {/* 1. Borrower Details */}
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><User className="w-5 h-5" /> Borrower Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="p-1 bg-blue-100 rounded">
+                                <User className="w-4 h-4 text-blue-600" />
+                            </div>
+                            Borrower Details
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Input name="applicantName" label="Name" value={formData.applicantName} onChange={handleChange} required />
                             <Input name="mobile" label="Mobile" value={formData.mobile} onChange={handleChange} required />
@@ -161,7 +168,12 @@ export default function CreateLoan() {
 
                     {/* 2. Guarantor Details */}
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Users className="w-5 h-5" /> Guarantor Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="p-1 bg-purple-100 rounded">
+                                <Users className="w-4 h-4 text-purple-600" />
+                            </div>
+                            Guarantor Details
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Input name="guarantorName" label="Name" value={formData.guarantorName} onChange={handleChange} required />
                             <Input name="guarantorMobile" label="Mobile" value={formData.guarantorMobile} onChange={handleChange} required />
@@ -174,7 +186,12 @@ export default function CreateLoan() {
 
                     {/* 3. Vehicle Details */}
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Truck className="w-5 h-5" /> Vehicle/Product Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="p-1 bg-orange-100 rounded">
+                                <Truck className="w-4 h-4 text-orange-600" />
+                            </div>
+                            Vehicle/Product Details
+                        </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Input name="vehicleProduct" label="Vehicle/Product" value={formData.vehicleProduct} onChange={handleChange} required />
                             <Input name="makerCompany" label="Maker/Company" value={formData.makerCompany} onChange={handleChange} required />
@@ -186,18 +203,20 @@ export default function CreateLoan() {
                     </div>
 
                     {/* 4. Loan Terms & Calculations */}
-                    <div className="bg-brand-dark/50 p-6 rounded-lg border border-white/5">
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Activity className="w-5 h-5 text-green-400" /> Loan Calculations</h3>
+                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Activity className="w-5 h-5 text-green-600" /> Loan Calculations
+                        </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             {/* Inputs */}
                             <div className="md:col-span-1">
-                                <label className="block text-sm text-gray-400 mb-1">Frequency</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
                                 <select
                                     name="frequency"
                                     value={formData.frequency}
                                     onChange={handleChange}
-                                    className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-brand-red focus:outline-none"
+                                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-brand-red focus:ring-1 focus:ring-brand-red focus:outline-none transition-colors"
                                 >
                                     <option value="Monthly">Monthly</option>
                                     <option value="Quarterly">Quarterly</option>
@@ -209,29 +228,29 @@ export default function CreateLoan() {
                             <Input type="date" name="emiDate" label="EMI Date" value={formData.emiDate} onChange={handleChange} required />
                             <div className="hidden md:block"></div>
 
-                            <Input type="number" name="loanAmount" label="Loan Amount (P)" value={formData.loanAmount} onChange={handleChange} required className="text-yellow-400 font-bold" />
+                            <Input type="number" name="loanAmount" label="Loan Amount (P)" value={formData.loanAmount} onChange={handleChange} required className="text-brand-red font-bold" />
                             <Input type="number" name="noOfInstallments" label="No. of Installments (T)" value={formData.noOfInstallments} onChange={handleChange} required />
                             <Input type="number" name="interestRate" label="Interest % (R)" value={formData.interestRate} onChange={handleChange} required />
 
                             {/* Calculated Read-Only */}
                             <div className="md:col-start-1 md:col-span-1">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Interest (Rs)</label>
-                                <div className="text-xl font-bold text-green-400">{formatCurrency(formData.interestAmount)}</div>
+                                <div className="text-xl font-bold text-green-600">{formatCurrency(formData.interestAmount)}</div>
                             </div>
 
                             <div className="md:col-span-1">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Total Amount</label>
-                                <div className="text-xl font-bold text-green-400">{formatCurrency(formData.totalAmount)}</div>
+                                <div className="text-xl font-bold text-green-600">{formatCurrency(formData.totalAmount)}</div>
                             </div>
 
-                            <div className="md:col-span-2 bg-white/10 p-3 rounded text-center border border-white/10">
-                                <label className="block text-xs uppercase tracking-wider text-gray-400 mb-1">Installment Amount (EMI)</label>
+                            <div className="md:col-span-2 bg-white p-3 rounded-lg text-center border border-gray-200 shadow-sm">
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Installment Amount (EMI)</label>
                                 <div className="text-3xl font-bold text-brand-red">{formatCurrency(formData.installmentAmount)}</div>
                             </div>
                         </div>
                     </div>
 
-                    <Button type="submit" className="w-full h-12 text-lg" isLoading={isLoading}>
+                    <Button type="submit" className="w-full h-12 text-lg shadow-md" isLoading={isLoading}>
                         Create Loan Application
                     </Button>
                 </form>

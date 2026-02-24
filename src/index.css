@@ -3,10 +3,10 @@
 @theme {
   --color-brand-red: #AA3519;
   --color-brand-dark: #0A0A0B;
-  --color-brand-gray: #1F1F22;
+  --color-brand-gray: #F3F4F6;
 }
 
 :root {
-  background-color: var(--color-brand-dark);
-  color: #ffffff;
+  background-color: var(--color-brand-gray);
+  color: #1F2937;
 }

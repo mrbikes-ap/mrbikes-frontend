@@ -6,6 +6,7 @@ import CreateLoan from './pages/office/CreateLoan';
 import LoanRepayment from './pages/office/LoanRepayment';
 import CloseLoan from './pages/office/CloseLoan';
 import PaymentReport from './pages/office/PaymentReport';
+import LoanStatusReport from './pages/office/LoanStatusReport';
 import DashboardHome from './pages/office/DashboardHome';
 import ExecutiveLayout from './layouts/ExecutiveLayout';
 import ExecutiveDashboard from './pages/executive/ExecutiveDashboard';
@@ -25,6 +26,7 @@ function App() {
             <Route path="repayment" element={<LoanRepayment />} />
             <Route path="close-loan" element={<CloseLoan />} />
             <Route path="report" element={<PaymentReport />} />
+            <Route path="loan-status" element={<LoanStatusReport />} />
           </Route>
 
           {/* Executive Routes */}

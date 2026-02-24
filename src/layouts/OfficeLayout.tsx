@@ -24,11 +24,14 @@ export default function OfficeLayout() {
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
-        <div className="min-h-screen bg-brand-dark text-white flex flex-col md:flex-row">
+        <div className="min-h-screen bg-brand-gray text-gray-900 flex flex-col md:flex-row">
             {/* Mobile Header */}
-            <header className="md:hidden bg-brand-dark/95 backdrop-blur border-b border-white/10 p-4 sticky top-0 z-50 flex justify-between items-center">
-                <span className="font-bold text-brand-red">Office Panel</span>
-                <button onClick={toggleSidebar} className="p-2 text-white">
+            <header className="md:hidden bg-white border-b border-gray-200 p-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
+                <div className="flex items-center gap-2">
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+                    <span className="font-bold text-brand-red">MR Bikes</span>
+                </div>
+                <button onClick={toggleSidebar} className="p-2 text-gray-600 hover:bg-gray-100 rounded">
                     {isSidebarOpen ? <X /> : <Menu />}
                 </button>
             </header>
@@ -43,20 +46,25 @@ export default function OfficeLayout() {
 
             {/* Sidebar */}
             <aside className={`
-                fixed md:sticky top-0 left-0 h-[100dvh] w-64 bg-brand-dark border-r border-white/10 p-4 flex flex-col z-50 transition-transform duration-300 ease-in-out
+                fixed md:sticky top-0 left-0 h-[100dvh] w-64 bg-white border-r border-gray-200 p-4 flex flex-col z-50 transition-transform duration-300 ease-in-out shadow-sm
                 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
-                <h2 className="text-xl font-bold text-brand-red mb-6 hidden md:block">Office Panel</h2>
+                <div className="flex items-center gap-3 mb-8 px-2">
+                    <img src="/logo.png" alt="MR Bikes" className="w-12 h-12 object-contain" />
+                    <div>
+                        <h2 className="text-2xl font-bold text-brand-red leading-none">MR Bikes</h2>
+                    </div>
+                </div>
 
-                <nav className="space-y-2 flex-1 overflow-y-auto">
+                <nav className="space-y-1 flex-1 overflow-y-auto">
                     <NavLink
                         to="/office"
                         end
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
@@ -66,9 +74,9 @@ export default function OfficeLayout() {
                         to="/office/create-agent"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
@@ -78,9 +86,9 @@ export default function OfficeLayout() {
                         to="/office/create-loan"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
@@ -90,9 +98,9 @@ export default function OfficeLayout() {
                         to="/office/repayment"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
@@ -102,9 +110,9 @@ export default function OfficeLayout() {
                         to="/office/close-loan"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
@@ -114,20 +122,32 @@ export default function OfficeLayout() {
                         to="/office/report"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
-                            `block p-2 rounded text-sm transition-colors ${isActive
-                                ? 'bg-brand-red text-white font-medium'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
                             }`
                         }
                     >
                         Payment Report
                     </NavLink>
+                    <NavLink
+                        to="/office/loan-status"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={({ isActive }) =>
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
+                            }`
+                        }
+                    >
+                        Loan Status Report
+                    </NavLink>
                 </nav>
 
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-gray-200">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center p-2 text-sm text-gray-500 hover:text-white hover:bg-white/5 rounded transition-colors"
+                        className="w-full flex items-center px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                     >
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout
@@ -136,7 +156,7 @@ export default function OfficeLayout() {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full bg-brand-gray">
                 <Outlet />
             </main>
         </div>
