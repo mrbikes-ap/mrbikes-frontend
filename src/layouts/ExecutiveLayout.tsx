@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Shield } from 'lucide-react';
+import { Outlet, useNavigate, NavLink } from 'react-router-dom';
+import { LogOut, Shield, FileText } from 'lucide-react';
 
 export default function ExecutiveLayout() {
     const navigate = useNavigate();
@@ -33,12 +33,23 @@ export default function ExecutiveLayout() {
                         <p className="text-[10px] text-gray-500">Executive Panel</p>
                     </div>
                 </div>
-                <button
-                    onClick={handleLogout}
-                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                >
-                    <LogOut className="w-4 h-4 text-gray-600" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <NavLink
+                        to="/executive/loan-status"
+                        className={({ isActive }) =>
+                            `p-2 rounded-full transition-colors ${isActive ? 'bg-brand-red/10 text-brand-red' : 'text-gray-600 hover:bg-gray-100'}`
+                        }
+                        title="Loan Status Report"
+                    >
+                        <FileText className="w-4 h-4" />
+                    </NavLink>
+                    <button
+                        onClick={handleLogout}
+                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                    >
+                        <LogOut className="w-4 h-4 text-gray-600" />
+                    </button>
+                </div>
             </header>
 
             {/* Main Content */}

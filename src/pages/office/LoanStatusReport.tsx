@@ -1,28 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, FileText, CheckCircle, AlertOctagon, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Download, FileText, CheckCircle, AlertOctagon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { formatDate, formatCurrency, getDueDays } from '../../utils/dateUtils';
 import { exportToExcel, exportMultipleSheetsToExcel } from '../../utils/excelUtils';
-
-interface LoanReportItem {
-    id: string; // LAN
-    fileDate: string; // LAN Issue Date
-    applicantName: string;
-    guarantorName: string;
-    vehicleProduct: string;
-    vehicleNumber: string;
-    model: string;
-    loanAmount: string; // Principal / Loan Taken
-    totalAmount: string; // Loan Amount + Interest
-    installmentAmount: string;
-    noOfInstallments: number;
-    emiDate: string;
-    isActive: boolean;
-    Repayments: any[];
-}
+import type { LoanReportItem } from '../../types/loan';
 
 export default function LoanStatusReport() {
+    const navigate = useNavigate();
+    const role = localStorage.getItem('role');
+    const loanProfileBase = role === 'executive' ? '/executive/loan' : '/office/loan';
+
     const [loans, setLoans] = useState<LoanReportItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -232,7 +220,15 @@ export default function LoanStatusReport() {
                                 filteredLoans.map((loan, index) => (
                                     <tr key={loan.id} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
                                         <td className="px-4 py-3 text-gray-500">{index + 1}</td>
-                                        <td className="px-4 py-3 font-medium text-brand-red">{loan.id}</td>
+                                        <td className="px-4 py-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`${loanProfileBase}/${loan.id}`)}
+                                                className="font-medium text-brand-red hover:underline cursor-pointer"
+                                            >
+                                                {loan.id}
+                                            </button>
+                                        </td>
                                         <td className="px-4 py-3 text-gray-600">{formatDate(loan.fileDate)}</td>
                                         <td className="px-4 py-3 font-medium text-gray-900">{loan.applicantName}</td>
                                         <td className="px-4 py-3 text-gray-500">{loan.guarantorName}</td>
