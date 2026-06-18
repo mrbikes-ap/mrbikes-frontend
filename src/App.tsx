@@ -10,6 +10,7 @@ import LoanStatusReport from './pages/office/LoanStatusReport';
 import DashboardHome from './pages/office/DashboardHome';
 import ExecutiveLayout from './layouts/ExecutiveLayout';
 import ExecutiveDashboard from './pages/executive/ExecutiveDashboard';
+import LoanProfilePage from './pages/LoanProfilePage';
 import OfflineAlert from './components/OfflineAlert';
 
 function App() {
@@ -27,11 +28,14 @@ function App() {
             <Route path="close-loan" element={<CloseLoan />} />
             <Route path="report" element={<PaymentReport />} />
             <Route path="loan-status" element={<LoanStatusReport />} />
+            <Route path="loan/:id" element={<LoanProfilePage />} />
           </Route>
 
           {/* Executive Routes */}
           <Route path="/executive" element={<ExecutiveLayout />}>
             <Route index element={<ExecutiveDashboard />} />
+            <Route path="loan-status" element={<LoanStatusReport />} />
+            <Route path="loan/:id" element={<LoanProfilePage />} />
           </Route>
           <Route path="/" element={<Login />} />
         </Routes>
