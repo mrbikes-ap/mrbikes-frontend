@@ -7,6 +7,7 @@ import LoanRepayment from './pages/office/LoanRepayment';
 import CloseLoan from './pages/office/CloseLoan';
 import PaymentReport from './pages/office/PaymentReport';
 import LoanStatusReport from './pages/office/LoanStatusReport';
+import CollectionsUpdate from './pages/office/CollectionsUpdate';
 import DashboardHome from './pages/office/DashboardHome';
 import ExecutiveLayout from './layouts/ExecutiveLayout';
 import ExecutiveDashboard from './pages/executive/ExecutiveDashboard';
@@ -25,6 +26,7 @@ function App() {
             <Route path="create-agent" element={<CreateAgent />} />
             <Route path="create-loan" element={<CreateLoan />} />
             <Route path="repayment" element={<LoanRepayment />} />
+            <Route path="collections-update" element={<CollectionsUpdate />} />
             <Route path="close-loan" element={<CloseLoan />} />
             <Route path="report" element={<PaymentReport />} />
             <Route path="loan-status" element={<LoanStatusReport />} />

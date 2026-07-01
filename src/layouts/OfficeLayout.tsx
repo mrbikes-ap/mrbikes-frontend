@@ -107,6 +107,18 @@ export default function OfficeLayout() {
                         Loan Repayment
                     </NavLink>
                     <NavLink
+                        to="/office/collections-update"
+                        onClick={() => setIsSidebarOpen(false)}
+                        className={({ isActive }) =>
+                            `block px-3 py-2 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-brand-red text-white font-medium shadow-sm'
+                                : 'text-gray-600 hover:text-brand-red hover:bg-red-50'
+                            }`
+                        }
+                    >
+                        Collections Update
+                    </NavLink>
+                    <NavLink
                         to="/office/close-loan"
                         onClick={() => setIsSidebarOpen(false)}
                         className={({ isActive }) =>
