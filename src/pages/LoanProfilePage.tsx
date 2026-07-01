@@ -129,7 +129,7 @@ export default function LoanProfilePage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
-    const canEdit = role === 'executive';
+    const canEdit = role === 'office';
     const backPath = role === 'executive' ? '/executive/loan-status' : '/office/loan-status';
 
     const [loan, setLoan] = useState<LoanProfile | null>(null);

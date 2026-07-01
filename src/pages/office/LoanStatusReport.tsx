@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { formatDate, formatCurrency, getDueDays } from '../../utils/dateUtils';
 import { exportToExcel, exportMultipleSheetsToExcel } from '../../utils/excelUtils';
 import type { LoanReportItem } from '../../types/loan';
+import { matchesLoanSearch } from '../../utils/loanSearchUtils';
 
 export default function LoanStatusReport() {
     const navigate = useNavigate();
@@ -103,18 +104,8 @@ export default function LoanStatusReport() {
                     statusFilter === 'ACTIVE' ? loan.isActive :
                         !loan.isActive;
 
-            // 2. Search Filter (Regex-like, case insensitive)
             if (!searchTerm.trim()) return matchesStatus;
-
-            const searchLower = searchTerm.toLowerCase().trim();
-            const matchesSearch =
-                (String(loan.id || '').toLowerCase().includes(searchLower)) ||
-                (String(loan.applicantName || '').toLowerCase().includes(searchLower)) ||
-                (String(loan.vehicleNumber || '').toLowerCase().includes(searchLower)) ||
-                (String(loan.vehicleProduct || '').toLowerCase().includes(searchLower)) ||
-                (String(loan.guarantorName || '').toLowerCase().includes(searchLower));
-
-            return matchesStatus && matchesSearch;
+            return matchesStatus && matchesLoanSearch(loan, searchTerm);
         });
 
     const handleExport = () => {
