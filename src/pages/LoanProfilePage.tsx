@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Users, Truck, Activity, Pencil, X, Check } from 'lucide-react';
+import { ArrowLeft, User, Users, Truck, Activity, Pencil, X, Check, CreditCard } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { formatDate, formatCurrency, parseFirestoreDate } from '../utils/dateUtils';
@@ -129,7 +129,8 @@ export default function LoanProfilePage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
-    const canEdit = role === 'executive';
+    const canEdit = role === 'office';
+    const canRepay = role === 'office';
     const backPath = role === 'executive' ? '/executive/loan-status' : '/office/loan-status';
 
     const [loan, setLoan] = useState<LoanProfile | null>(null);
@@ -416,6 +417,16 @@ export default function LoanProfilePage() {
                             <Field label="Total Amount" value={formatCurrency(loan.totalAmount)} />
                             <Field label="Installment (EMI)" value={formatCurrency(loan.installmentAmount)} />
                             <Field label="Status" value={loan.isActive ? 'Active' : 'Closed'} />
+                            {canRepay && loan.isActive && (
+                                <div className="sm:col-span-2 md:col-span-3 flex justify-end pt-2">
+                                    <Button
+                                        type="button"
+                                        onClick={() => navigate(`/office/repayment?loanId=${loan.id}`)}
+                                    >
+                                        <CreditCard className="w-4 h-4 mr-2" /> Loan Repay
+                                    </Button>
+                                </div>
+                            )}
                         </>
                     )}
                 </Section>

@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Search, FileText, Calendar, IndianRupee, AlertCircle, History, User, CreditCard, Download } from 'lucide-react';
 import { formatDate, parseFirestoreDate, formatCurrency } from '../../utils/dateUtils';
 import { exportToExcel } from '../../utils/excelUtils';
 
+import { matchesLoanSearch } from '../../utils/loanSearchUtils';
+
 export default function LoanRepayment() {
+    const [searchParams] = useSearchParams();
+    const directLoanId = searchParams.get('loanId');
+    const isDirectMode = Boolean(directLoanId);
     const [searchTerm, setSearchTerm] = useState('');
     const [allLoans, setAllLoans] = useState<any[]>([]);
     const [filteredLoans, setFilteredLoans] = useState<any[]>([]);
@@ -32,26 +38,28 @@ export default function LoanRepayment() {
     }, []);
 
     useEffect(() => {
+        const loanId = searchParams.get('loanId');
+        if (loanId) {
+            justSelected.current = true;
+            fetchFullLoanDetails(loanId);
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (isDirectMode) return;
         if (!searchTerm.trim()) {
             setFilteredLoans([]);
             setShowSuggestions(false);
             return;
         }
-        // Skip showing suggestions right after a loan is selected
         if (justSelected.current) {
             justSelected.current = false;
             return;
         }
-        const lowerTerm = searchTerm.toLowerCase().trim();
-        const matches = allLoans.filter(l =>
-            (l.id && l.id.toLowerCase().includes(lowerTerm)) ||
-            (l.applicantName && l.applicantName.toLowerCase().includes(lowerTerm)) ||
-            (l.vehicleNumber && l.vehicleNumber.toLowerCase().includes(lowerTerm)) ||
-            (l.vehicleProduct && l.vehicleProduct.toLowerCase().includes(lowerTerm))
-        );
+        const matches = allLoans.filter((l) => matchesLoanSearch(l, searchTerm));
         setFilteredLoans(matches);
         setShowSuggestions(true);
-    }, [searchTerm, allLoans]);
+    }, [searchTerm, allLoans, isDirectMode]);
 
     const fetchAllActiveLoans = async () => {
         try {
@@ -95,6 +103,9 @@ export default function LoanRepayment() {
             if (data.success) {
                 setLoan(data.loan);
                 setRepayments(data.loan.Repayments || []);
+                if (!directLoanId) {
+                    setSearchTerm(`${data.loan.id} - ${data.loan.applicantName}`);
+                }
 
                 // Auto-set amount to installment amount
                 setPaymentForm(prev => ({
@@ -179,44 +190,58 @@ export default function LoanRepayment() {
 
     return (
         <div className="max-w-6xl mx-auto mt-6 mb-10">
-            {/* Search Section */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6 relative">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Search className="w-5 h-5 text-brand-red" /> Search Loan
-                </h2>
-                <div className="flex gap-4 relative">
-                    <div className="flex-1 relative">
-                        <Input
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onFocus={() => { if (searchTerm) setShowSuggestions(true); }}
-                            placeholder="Enter LAN, Name, or Vehicle Number..."
-                            className="w-full"
-                        />
-                        {showSuggestions && filteredLoans.length > 0 && (
-                            <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                {filteredLoans.map((l) => (
-                                    <div
-                                        key={l.id}
-                                        className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0"
-                                        onClick={() => handleSelectLoan(l)}
-                                    >
-                                        <div className="font-bold text-gray-900">{l.applicantName} <span className="text-brand-red text-sm">({l.id})</span></div>
-                                        <div className="text-xs text-gray-500">{l.vehicleProduct} - {l.vehicleNumber}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {showSuggestions && searchTerm && filteredLoans.length === 0 && (
-                            <div className="absolute z-10 w-full bg-white mt-1 p-3 text-gray-500 text-sm border border-gray-200 rounded-md shadow-lg">
-                                No matching active loans found.
-                            </div>
-                        )}
+            {!isDirectMode && (
+                <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6 relative">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Search className="w-5 h-5 text-brand-red" /> Search Loan
+                    </h2>
+                    <div className="flex gap-4 relative">
+                        <div className="flex-1 relative">
+                            <Input
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onFocus={() => { if (searchTerm) setShowSuggestions(true); }}
+                                placeholder="Enter LAN, Name, or Vehicle Number..."
+                                className="w-full"
+                            />
+                            {showSuggestions && filteredLoans.length > 0 && (
+                                <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                    {filteredLoans.map((l) => (
+                                        <div
+                                            key={l.id}
+                                            className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0"
+                                            onClick={() => handleSelectLoan(l)}
+                                        >
+                                            <div className="font-bold text-gray-900">{l.applicantName} <span className="text-brand-red text-sm">({l.id})</span></div>
+                                            <div className="text-xs text-gray-500">{l.vehicleProduct} - {l.vehicleNumber}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {showSuggestions && searchTerm && filteredLoans.length === 0 && (
+                                <div className="absolute z-10 w-full bg-white mt-1 p-3 text-gray-500 text-sm border border-gray-200 rounded-md shadow-lg">
+                                    No matching active loans found.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-                {error && <p className="text-red-600 mt-2">{error}</p>}
-                {success && <p className="text-green-600 mt-2">{success}</p>}
-            </div>
+            )}
+
+            {(error || success) && (
+                <div className="mb-6">
+                    {error && <p className="text-red-600">{error}</p>}
+                    {success && <p className="text-green-600">{success}</p>}
+                </div>
+            )}
+
+            {isDirectMode && loan && (
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-brand-red" /> Loan Repayment — {loan.applicantName} ({loan.id})
+                    </h2>
+                </div>
+            )}
 
             {loan && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

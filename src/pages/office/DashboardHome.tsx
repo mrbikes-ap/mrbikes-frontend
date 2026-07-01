@@ -1,19 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IndianRupee, Users, TrendingUp, TrendingDown, Calendar, Activity } from 'lucide-react';
+import { IndianRupee, Users, TrendingUp, TrendingDown, Calendar, Activity, Search } from 'lucide-react';
 import { formatCurrency } from '../../utils/dateUtils';
+import { Input } from '../../components/ui/Input';
+import { matchesLoanSearch } from '../../utils/loanSearchUtils';
 
 export default function DashboardHome() {
     const navigate = useNavigate();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [allLoans, setAllLoans] = useState<any[]>([]);
+    const [filteredLoans, setFilteredLoans] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
 
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('token');
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
             const response = await fetch(`${API_URL}/stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
             if (data.success) {
@@ -26,9 +33,63 @@ export default function DashboardHome() {
         }
     };
 
+    const fetchLoans = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${API_URL}/loans`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await response.json();
+            if (data.success) {
+                setAllLoans(data.loans);
+            }
+        } catch (error) {
+            console.error('Failed to fetch loans', error);
+        }
+    };
+
     useEffect(() => {
         fetchStats();
+        fetchLoans();
     }, []);
+
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setFilteredLoans([]);
+            setShowSuggestions(false);
+            return;
+        }
+        const matches = allLoans.filter((loan) => matchesLoanSearch(loan, searchTerm));
+        setFilteredLoans(matches);
+        setShowSuggestions(true);
+    }, [searchTerm, allLoans]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelectLoan = (loan: any) => {
+        setSearchTerm('');
+        setShowSuggestions(false);
+        navigate(`/office/loan/${loan.id}`);
+    };
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchTerm.trim() || filteredLoans.length === 0) return;
+        if (filteredLoans.length === 1) {
+            handleSelectLoan(filteredLoans[0]);
+        } else {
+            setShowSuggestions(true);
+        }
+    };
 
     if (loading) {
         return <div className="text-gray-800 p-8">Loading Dashboard...</div>;
@@ -36,9 +97,50 @@ export default function DashboardHome() {
 
     return (
         <div className="max-w-7xl mx-auto mt-6 mb-10">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Activity className="w-8 h-8 text-brand-red" /> Financial Overview
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 shrink-0">
+                    <Activity className="w-8 h-8 text-brand-red" /> Financial Overview
+                </h2>
+
+                <div ref={searchRef} className="relative w-full sm:w-[28rem] sm:max-w-xl">
+                    <form onSubmit={handleSearchSubmit} className="relative">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+                        <Input
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onFocus={() => { if (searchTerm.trim()) setShowSuggestions(true); }}
+                            placeholder="Search by name, phone, LAN, vehicle..."
+                            className="pl-11 py-3 text-sm h-12"
+                        />
+                    </form>
+                    {showSuggestions && filteredLoans.length > 0 && (
+                        <div className="absolute z-20 w-full bg-white mt-1 border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {filteredLoans.map((loan) => (
+                                <button
+                                    key={loan.id}
+                                    type="button"
+                                    onClick={() => handleSelectLoan(loan)}
+                                    className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 transition-colors"
+                                >
+                                    <div className="font-bold text-gray-900">
+                                        {loan.applicantName}{' '}
+                                        <span className="text-brand-red text-sm font-mono">({loan.id})</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        {loan.mobile && `${loan.mobile} · `}
+                                        {loan.vehicleProduct} - {loan.vehicleNumber}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {showSuggestions && searchTerm.trim() && filteredLoans.length === 0 && (
+                        <div className="absolute z-20 w-full bg-white mt-1 p-3 text-gray-500 text-sm border border-gray-200 rounded-lg shadow-lg">
+                            No matching loans found.
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Top Row: Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -111,7 +213,6 @@ export default function DashboardHome() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-
                     <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <a href="/office/create-loan" className="block p-4 bg-brand-red hover:bg-brand-red/90 rounded-lg text-white font-bold text-center transition-colors shadow-sm">
