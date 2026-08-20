@@ -1,7 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { ClipboardList, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ClipboardList, Plus, Trash2, Upload } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { parseFirestoreDate } from '../../utils/dateUtils';
+import { parseFlexibleDate, toCollectionDateString } from '../../utils/dateUtils';
+import { parseCollectionsExcel, type ParsedCollectionRow } from '../../utils/excelUtils';
+import { normalizeLanNo } from '../../utils/lanUtils';
+
+interface SyncError {
+    lanNo: string;
+    message: string;
+}
+
+const summarizeCreatedLoans = (createdLoans: string[]) => {
+    const unique = [...new Set(createdLoans.filter(Boolean))];
+    if (unique.length === 0) return '';
+    const examples = unique.slice(0, 8).join(', ');
+    return (
+        `${unique.length} new loan(s) were created automatically from Collections Update. ` +
+        `You can complete missing details later in Create Loan / loan profile. ` +
+        `Examples: ${examples}${unique.length > 8 ? '...' : ''}`
+    );
+};
 
 interface CollectionRow {
     id: string;
@@ -22,7 +40,7 @@ interface CollectionRow {
 
 const emptyRow = (): CollectionRow => ({
     id: crypto.randomUUID(),
-    date: new Date().toISOString().split('T')[0],
+    date: toCollectionDateString(new Date()) || '',
     lanNo: '',
     cusName: '',
     receiptNo: '',
@@ -37,11 +55,24 @@ const emptyRow = (): CollectionRow => ({
     ipm2: '',
 });
 
-const toDateInputValue = (date: unknown): string => {
-    const parsed = parseFirestoreDate(date);
-    if (!parsed) return '';
-    return parsed.toISOString().split('T')[0];
-};
+const toDateInputValue = (date: unknown): string => toCollectionDateString(date);
+
+const mapEntryToRow = (entry: Record<string, unknown>): CollectionRow => ({
+    id: String(entry.id),
+    date: toCollectionDateString(entry.date) || toCollectionDateString(new Date()),
+    lanNo: normalizeLanNo(entry.lanNo),
+    cusName: toInputString(entry.cusName),
+    receiptNo: toInputString(entry.receiptNo),
+    emi: toInputString(entry.emi),
+    penal: toInputString(entry.penal),
+    others: toInputString(entry.others),
+    dueDate: toCollectionDateString(entry.dueDate),
+    loanAmount: toInputString(entry.loanAmount),
+    ipm: toInputString(entry.ipm),
+    scheduledEmi: toInputString(entry.scheduledEmi),
+    countE: toInputString(entry.countE),
+    ipm2: toInputString(entry.ipm2),
+});
 
 const toInputString = (value: unknown): string => {
     if (value === undefined || value === null || value === '') return '';
@@ -75,22 +106,58 @@ const rowHasContent = (row: CollectionRow) =>
 const cellInput =
     'w-full min-w-[80px] px-2 py-1.5 text-xs border border-gray-200 rounded focus:border-brand-red focus:ring-1 focus:ring-brand-red focus:outline-none bg-white';
 
-const mapEntryToRow = (entry: Record<string, unknown>): CollectionRow => ({
-    id: String(entry.id),
-    date: toInputString(entry.date) || new Date().toISOString().split('T')[0],
-    lanNo: toInputString(entry.lanNo),
-    cusName: toInputString(entry.cusName),
-    receiptNo: toInputString(entry.receiptNo),
-    emi: toInputString(entry.emi),
-    penal: toInputString(entry.penal),
-    others: toInputString(entry.others),
-    dueDate: toInputString(entry.dueDate),
-    loanAmount: toInputString(entry.loanAmount),
-    ipm: toInputString(entry.ipm),
-    scheduledEmi: toInputString(entry.scheduledEmi),
-    countE: toInputString(entry.countE),
-    ipm2: toInputString(entry.ipm2),
+const parsedRowToCollectionRow = (parsed: ParsedCollectionRow): CollectionRow => ({
+    id: crypto.randomUUID(),
+    date: parsed.date || toCollectionDateString(new Date()),
+    lanNo: normalizeLanNo(parsed.lanNo),
+    cusName: parsed.cusName,
+    receiptNo: parsed.receiptNo,
+    emi: parsed.emi,
+    penal: parsed.penal,
+    others: parsed.others,
+    dueDate: parsed.dueDate,
+    loanAmount: parsed.loanAmount,
+    ipm: parsed.ipm,
+    scheduledEmi: parsed.scheduledEmi,
+    countE: parsed.countE,
+    ipm2: parsed.ipm2,
 });
+
+function DateTextInput({
+    value,
+    onChange,
+    placeholder = 'dd-mm-yyyy',
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+}) {
+    const handleBlur = () => {
+        if (!value.trim()) return;
+        const normalized = parseFlexibleDate(value);
+        if (normalized && normalized !== value) {
+            onChange(normalized);
+        }
+    };
+
+    return (
+        <input
+            type="text"
+            className={cellInput}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={handleBlur}
+            onPaste={(e) => {
+                const pasted = e.clipboardData.getData('text').trim();
+                if (!pasted) return;
+                e.preventDefault();
+                const normalized = parseFlexibleDate(pasted);
+                onChange(normalized ?? pasted);
+            }}
+        />
+    );
+}
 
 export default function CollectionsUpdate() {
     const [rows, setRows] = useState<CollectionRow[]>(() =>
@@ -99,9 +166,12 @@ export default function CollectionsUpdate() {
     const [loadedIds, setLoadedIds] = useState<Set<string>>(new Set());
     const [deletedIds, setDeletedIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [fetching, setFetching] = useState(true);
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
     const [success, setSuccess] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchCollections();
@@ -183,33 +253,34 @@ export default function CollectionsUpdate() {
         setRows((prev) => prev.filter((row) => row.id !== id));
     };
 
-    const handleUpdate = async () => {
-        const rowsToSave = rows.filter(rowHasContent);
+    const saveCollections = async (rowsToSave: CollectionRow[], idsToDelete: string[] = deletedIds) => {
+        const filtered = rowsToSave.filter(rowHasContent);
 
-        if (rowsToSave.length === 0 && deletedIds.length === 0) {
+        if (filtered.length === 0 && idsToDelete.length === 0) {
             setError('Enter at least one row with data before updating.');
             setSuccess('');
-            return;
+            return false;
         }
 
         setLoading(true);
         setError('');
+        setWarning('');
         setSuccess('');
 
         try {
             const token = localStorage.getItem('token');
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-            const entries = rowsToSave.map((row) => ({
+            const entries = filtered.map((row) => ({
                 id: row.id,
-                date: row.date,
-                lanNo: row.lanNo.trim(),
+                date: toCollectionDateString(row.date) || row.date,
+                lanNo: normalizeLanNo(row.lanNo),
                 cusName: row.cusName.trim(),
                 receiptNo: row.receiptNo.trim(),
                 emi: parseFloat(row.emi) || 0,
                 penal: parseFloat(row.penal) || 0,
                 others: parseFloat(row.others) || 0,
                 total: calcTotal(row),
-                dueDate: row.dueDate,
+                dueDate: toCollectionDateString(row.dueDate) || row.dueDate,
                 loanAmount: parseFloat(row.loanAmount) || 0,
                 ipm: parseFloat(row.ipm) || 0,
                 scheduledEmi: parseFloat(row.scheduledEmi) || 0,
@@ -223,7 +294,7 @@ export default function CollectionsUpdate() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ entries, deletedIds }),
+                body: JSON.stringify({ entries, deletedIds: idsToDelete }),
             });
 
             const data = await response.json();
@@ -233,20 +304,84 @@ export default function CollectionsUpdate() {
                         ? ` ${data.customersUpdated} customer loan(s) updated.`
                         : '';
                 setSuccess(`${data.message}.${customerMsg}`);
-                if (data.errors?.length > 0) {
+
+                const createdLoans = Array.isArray(data.createdLoans) ? data.createdLoans : [];
+                if (createdLoans.length > 0) {
+                    setWarning(summarizeCreatedLoans(createdLoans));
+                }
+
+                const otherErrors = Array.isArray(data.errors)
+                    ? data.errors.filter((entry: SyncError) => !/not found/i.test(entry.message || ''))
+                    : [];
+                if (otherErrors.length > 0) {
                     setError(
-                        data.errors.map((e: { lanNo: string; message: string }) => `${e.lanNo}: ${e.message}`).join('; ')
+                        otherErrors.map((entry: SyncError) => `${entry.lanNo}: ${entry.message}`).join('; ')
                     );
                 }
                 setDeletedIds([]);
                 await fetchCollections();
-            } else {
-                setError(data.message || 'Update failed');
+                return true;
             }
+
+            setError(data.message || 'Update failed');
+            return false;
         } catch {
             setError('Connection error. Please try again.');
+            return false;
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        await saveCollections(rows);
+    };
+
+    const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+
+        const validExt = /\.(xlsx|xls)$/i.test(file.name);
+        if (!validExt) {
+            setError('Please upload an Excel file (.xlsx or .xls).');
+            setSuccess('');
+            return;
+        }
+
+        setUploading(true);
+        setError('');
+        setWarning('');
+        setSuccess('');
+
+        try {
+            const parsedRows = await parseCollectionsExcel(file);
+            if (parsedRows.length === 0) {
+                setError('No data rows found in the Excel file. Check column headers match the table.');
+                return;
+            }
+
+            const importedRows = parsedRows.map(parsedRowToCollectionRow);
+            const paddedRows =
+                importedRows.length >= 10
+                    ? importedRows
+                    : [...importedRows, ...Array.from({ length: 10 - importedRows.length }, () => emptyRow())];
+
+            setRows(paddedRows);
+            setLoadedIds(new Set());
+
+            const saved = await saveCollections(importedRows, []);
+            if (saved) {
+                setSuccess((prev) =>
+                    prev
+                        ? `${prev} Imported ${importedRows.length} row(s) from Excel.`
+                        : `Imported ${importedRows.length} row(s) from Excel and saved to database.`
+                );
+            }
+        } catch {
+            setError('Failed to read Excel file. Please check the file format.');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -273,6 +408,21 @@ export default function CollectionsUpdate() {
                     <ClipboardList className="w-7 h-7 text-brand-red" /> Collections Update
                 </h2>
                 <div className="flex gap-2">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                        className="hidden"
+                        onChange={handleExcelUpload}
+                    />
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        isLoading={uploading}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        <Upload className="w-4 h-4 mr-2" /> Upload Excel
+                    </Button>
                     <Button type="button" variant="secondary" onClick={addRow}>
                         <Plus className="w-4 h-4 mr-2" /> Add Row
                     </Button>
@@ -284,6 +434,9 @@ export default function CollectionsUpdate() {
 
             {error && (
                 <div className="bg-red-50 text-red-600 p-3 rounded mb-4 border border-red-200">{error}</div>
+            )}
+            {warning && (
+                <div className="bg-amber-50 text-amber-800 p-3 rounded mb-4 border border-amber-200">{warning}</div>
             )}
             {success && (
                 <div className="bg-green-50 text-green-600 p-3 rounded mb-4 border border-green-200">{success}</div>
@@ -327,11 +480,9 @@ export default function CollectionsUpdate() {
                                         {index + 1}
                                     </td>
                                     <td className="border border-gray-200 px-1 py-1">
-                                        <input
-                                            type="date"
-                                            className={cellInput}
+                                        <DateTextInput
                                             value={row.date}
-                                            onChange={(e) => updateRow(row.id, 'date', e.target.value)}
+                                            onChange={(value) => updateRow(row.id, 'date', value)}
                                         />
                                     </td>
                                     <td className="border border-gray-200 px-1 py-1">
@@ -339,8 +490,8 @@ export default function CollectionsUpdate() {
                                             className={cellInput}
                                             value={row.lanNo}
                                             placeholder="LAN001"
-                                            onChange={(e) => updateRow(row.id, 'lanNo', e.target.value)}
-                                            onBlur={(e) => fetchLoanForRow(row.id, e.target.value)}
+                                            onChange={(e) => updateRow(row.id, 'lanNo', normalizeLanNo(e.target.value))}
+                                            onBlur={(e) => fetchLoanForRow(row.id, normalizeLanNo(e.target.value))}
                                         />
                                     </td>
                                     <td className="border border-gray-200 px-1 py-1">
@@ -390,11 +541,9 @@ export default function CollectionsUpdate() {
                                         {calcTotal(row) > 0 ? calcTotal(row).toLocaleString('en-IN') : ''}
                                     </td>
                                     <td className="border border-gray-200 px-1 py-1">
-                                        <input
-                                            type="date"
-                                            className={cellInput}
+                                        <DateTextInput
                                             value={row.dueDate}
-                                            onChange={(e) => updateRow(row.id, 'dueDate', e.target.value)}
+                                            onChange={(value) => updateRow(row.id, 'dueDate', value)}
                                         />
                                     </td>
                                     <td className="border border-gray-200 px-1 py-1">
