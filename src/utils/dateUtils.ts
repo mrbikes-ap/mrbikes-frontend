@@ -79,6 +79,88 @@ export const calculateNextDueDate = (loan: any): string => {
     return formatDate(nextDueDate);
 };
 
+/** Display/storage format used in Collections Update date fields */
+export const COLLECTION_DATE_FORMAT = 'dd-mm-yyyy';
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+const excelSerialToDate = (serial: number): Date | null => {
+    if (!Number.isFinite(serial) || serial < 1000 || serial >= 100000) return null;
+    const utcDays = Math.floor(serial - 25569);
+    const date = new Date(utcDays * 86400 * 1000);
+    return isNaN(date.getTime()) ? null : date;
+};
+
+/** Format a Date as dd-mm-yyyy */
+export const formatCollectionDate = (date: Date): string => {
+    return `${pad2(date.getDate())}-${pad2(date.getMonth() + 1)}-${date.getFullYear()}`;
+};
+
+/**
+ * Parse flexible date input: dd-mm-yyyy, dd/mm/yyyy, dd.mm.yyyy, yyyy-mm-dd, or native Date parse.
+ * Returns dd-mm-yyyy when valid, otherwise null.
+ */
+export const parseFlexibleDate = (value: unknown): string | null => {
+    if (value === undefined || value === null || value === '') return null;
+
+    if (value instanceof Date && !isNaN(value.getTime())) {
+        return formatCollectionDate(value);
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        const excelDate = excelSerialToDate(value);
+        return excelDate ? formatCollectionDate(excelDate) : null;
+    }
+
+    const str = String(value).trim();
+    if (!str) return null;
+
+    if (/^\d+(\.\d+)?$/.test(str)) {
+        const excelDate = excelSerialToDate(parseFloat(str));
+        return excelDate ? formatCollectionDate(excelDate) : null;
+    }
+
+    const dmy = str.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+    if (dmy) {
+        const day = parseInt(dmy[1], 10);
+        const month = parseInt(dmy[2], 10);
+        const year = parseInt(dmy[3], 10);
+        const date = new Date(year, month - 1, day);
+        if (
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day
+        ) {
+            return formatCollectionDate(date);
+        }
+        return null;
+    }
+
+    const ymd = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (ymd) {
+        const year = parseInt(ymd[1], 10);
+        const month = parseInt(ymd[2], 10);
+        const day = parseInt(ymd[3], 10);
+        const date = new Date(year, month - 1, day);
+        if (
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day
+        ) {
+            return formatCollectionDate(date);
+        }
+        return null;
+    }
+
+    const parsed = parseFirestoreDate(str);
+    return parsed ? formatCollectionDate(parsed) : null;
+};
+
+/** Normalize any date value to dd-mm-yyyy for display, or empty string */
+export const toCollectionDateString = (value: unknown): string => {
+    return parseFlexibleDate(value) ?? '';
+};
+
 export const getDueDays = (dueDate: any): number => {
     const target = parseFirestoreDate(dueDate);
     if (!target) return 0;
